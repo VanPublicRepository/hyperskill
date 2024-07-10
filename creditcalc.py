@@ -1,48 +1,80 @@
+# program for calculating annuity payment
+
+# imports
 import math
+import argparse
 
-# get loan principle
-print('Enter the loan principal:')
-loan_principle = int(input())
+# get arguments with argparse
 
-# get type of payment input
-print('What do you want to calculate?')
-print('type "m" for number of monthly payments,')
-print('type "p" for the monthly payment:')
+parser = argparse.ArgumentParser(description='Annuity payment calculator')
+parser.add_argument('--payment', type=float)
+parser.add_argument('--principal', type=float)
+parser.add_argument('--periods', type=float)
+parser.add_argument('--interest', type=float)
 
-payment_type = input()
+# parse values to 'args'
+args = parser.parse_args()
 
-# if m than calculate number of monthly payments
-if payment_type == 'm':
-    print('Enter the monthly payment:')
+# functions
+# function to calculate number of monthly payments
 
-    # get monthly payment
-    input_monthly_payment = int(input())
 
-    # calculate time for monthly payments
-    time_for_payment = loan_principle / input_monthly_payment
+def calculate_number_of_monthly_payments(principal, payment, interest):
+    # calculate nominal interest rate as 'i'
+    i = (interest / 100) * (1/12)
 
-    # check for grammar ie singular or plural
-    if math.ceil(time_for_payment) == 1:
-        print(f'It will take {math.ceil(time_for_payment)} month to repay the loan')
+    # calculate number of months as 'n'
+    n = math.log(payment / (payment - i * principal), 1 + i)
+
+    # round it up
+    n = math.ceil(n)
+
+    # convert to more readable format ie years & months
+    number_of_years = n // 12
+    number_of_months = math.ceil(n % 12)
+
+    # display
+    # check if number of years or months is 0
+    if number_of_years == 0:
+        print(f'It will take {number_of_months} months to repay this loan!')
+    elif number_of_months == 0:
+        print(f'It will take {number_of_years} years to repay this loan!')
     else:
-        print(f'It will take {math.ceil(time_for_payment)} months to repay the loan')
+        print(f'It will take {number_of_years} years and {number_of_months} months to repay this loan!')
 
-else:
-    # get number of months
-    print('Enter the number of months:')
-    number_of_months = int(input())
+
+# function to calculate the monthly payment ie annuity payment
+
+
+def calculate_monthly_payment(principal, periods, interest):
+    # calculate nominal interest rate as 'i'
+    i = (interest / 100) * (1 / 12)
 
     # calculate monthly payment
-    calculated_monthly_payment = loan_principle / number_of_months
+    monthly_payment = principal * ((i * ((1 + i) ** periods)) / (((1 + i) ** periods) - 1))
 
-    # check if calculated monthly payment is a float or not
-    # if float then calculate last payment
-    if calculated_monthly_payment == math.ceil(calculated_monthly_payment):  # it is not a decimal number
-        # display the monthly payment
-        print(f'Your monthly payment = {math.ceil(calculated_monthly_payment)}')
-    else:
-        # calculate last payment
-        last_payment = loan_principle - (number_of_months - 1) * math.ceil(calculated_monthly_payment)
+    # display monthly payment
+    print(f'Your monthly payment = {math.ceil(monthly_payment)}!')
 
-        # display
-        print(f'Your monthly payment = {math.ceil(calculated_monthly_payment)} and the last payment = {last_payment}')
+
+# function to calculate loan principal
+
+
+def calculate_loan_principal(payment, periods, interest):
+    # calculate nominal interest rate as 'i'
+    i = (interest / 100) * (1 / 12)
+
+    # calculate loan principal
+    loan_principal = payment / ((i * ((1 + i) ** periods)) / (((1 + i) ** periods) - 1))
+
+    # display
+    print(f'Your loan principal = {round(loan_principal)}!')
+
+
+# compute according to given flags
+if args.periods is None:
+    calculate_number_of_monthly_payments(args.principal, args.payment, args.interest)
+elif args.payment is None:
+    calculate_monthly_payment(args.principal, args.periods, args.interest)
+else:
+    calculate_loan_principal(args.payment, args.periods, args.interest)
